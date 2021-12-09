@@ -1,7 +1,7 @@
 
 <script>
-
   import TimeOption from './TimeOption.svelte'
+  import { workTimerLength, shortBreakLength, longBreakLength } from './../Stores/Timer'
 
   let stages = [
     0, // focus
@@ -11,6 +11,8 @@
 
   let timeRemainingDisplay = '00:00'
   let currentStage = stages[0]
+
+  console.log('$workTimerLength', $workTimerLength);
 
 </script>
 
@@ -32,7 +34,7 @@
 
   <div class="timeOptions">
     {#each stages as stage}
-      <TimeOption active={currentStage === stage} />
+      <TimeOption active={currentStage === stage} time={$workTimerLength} />
     {/each}
     
   </div>
