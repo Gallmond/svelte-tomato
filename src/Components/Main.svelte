@@ -1,18 +1,17 @@
 
 <script>
   import TimeOption from './TimeOption.svelte'
-  import { workTimerLength, shortBreakLength, longBreakLength } from './../Stores/Timer'
+  import { timer, workTimerLength, shortBreakLength, longBreakLength } from './../Stores/Timer'
 
-  let stages = [
-    0, // focus
-    1, // break
-    2  // long break
-  ]
+  $timer.initFromLocalStorage( window.localStorage );
 
-  let timeRemainingDisplay = '00:00'
-  let currentStage = stages[0]
+  const timers = $timer.getTimers();
 
-  console.log('$workTimerLength', $workTimerLength);
+  //TODO how to read current time remaining? this isn't working?
+  let currentTimeRemaining;
+  timer.subscribe((updatedTimer)=>{
+    currentTimeRemaining = updatedTimer.getCurrentTimeRemaining()
+  })
 
 </script>
 
@@ -29,12 +28,16 @@
   </div>
 
   <div>
-    <button>Start</button>
+    <button on:click={$timer.start()}>Start</button>
   </div>
 
   <div class="timeOptions">
-    {#each stages as stage}
-      <TimeOption active={currentStage === stage} time={$workTimerLength} />
+    {#each timers as timerInfo}
+      <TimeOption active={$timer.getCurrentTimer().id === timerInfo.id} time={
+        $timer.getState() === 0
+          ? timerInfo.time
+          : currentTimeRemaining
+        } />
     {/each}
     
   </div>

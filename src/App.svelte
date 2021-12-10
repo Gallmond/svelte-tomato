@@ -1,13 +1,10 @@
 <script>
 	import Main from './Components/Main.svelte'
+	import { timer } from './Stores/Timer'
 
-	$$props.timer.start();
+	
+	
 
-
-	setTimeout(() => {
-		console.log('stopping');
-		$$props.timer.stop();
-	}, 5000);
 
 </script>
 

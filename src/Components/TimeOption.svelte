@@ -2,8 +2,6 @@
   export let active = false;
   export let time = false;
 
-  console.log('TimeOption $$props', $$props)
-
   // turn time into mm:ss
   $: timeDisplay = (()=>{
     if(!time) return '00:00'

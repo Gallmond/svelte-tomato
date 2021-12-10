@@ -5,7 +5,7 @@ import Timer from './Classes/Timer';
 const app = new App({
 	target: document.body,
 	props: {
-		timer: new Timer(),
+		// timer: new Timer(),
 		name: 'world'
 	}
 });
