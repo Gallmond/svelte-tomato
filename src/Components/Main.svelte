@@ -51,8 +51,6 @@
 
   }
 
-  //TODO change state ids
-  // - suss out stopped / reset logic?
 
   let timerIntervalId = false;
   const startTimer = () => {
