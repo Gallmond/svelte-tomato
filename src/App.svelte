@@ -1,10 +1,5 @@
 <script>
 	import Main from './Components/Main.svelte'
-	import { timer } from './Stores/Timer'
-
-	
-	
-
 
 </script>
 

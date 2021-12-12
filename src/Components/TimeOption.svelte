@@ -1,34 +1,61 @@
 <script>
-  export let active = false;
-  export let time = false;
+  import { msToMinutesSeconds } from './../Classes/Util'
+  import { timers, activeTimerName } from './../Stores/Timer'
+  import { createEventDispatcher } from 'svelte';
 
-  // turn time into mm:ss
-  $: timeDisplay = (()=>{
-    if(!time) return '00:00'
+  const dispatch = createEventDispatcher();
 
-    let seconds = (time / 1000) % 60
-    let minutes = (time / 1000) / 60
+  export let name;
 
-    console.log(`minutes ${minutes} seconds ${seconds}`);
+  let active;
+  let thisTimerLength = 0;
+  let thisTimerLengthFormatted = '';
 
-    seconds = seconds.toFixed(0)
-    minutes = minutes.toFixed(0)
+  activeTimerName.subscribe(val => {
+    active = name === val
+  })
 
-    seconds = (seconds.length < 2 ? '0' : '') + seconds
-    minutes = (minutes.length < 2 ? '0' : '') + minutes
+  timers.subscribe( dTimers => {
+    dTimers.some( dTimer => {
+      if(dTimer.name === name){
+        thisTimerLength = dTimer.length;
+        thisTimerLengthFormatted = msToMinutesSeconds(dTimer.length);
+        return true;
+      }
+    })
+  })
 
-    return `${minutes}:${seconds}`
-  })();
+  let keyUpTimeout = false;
+  const thisTimerLengthChanged = (e)=>{
+    clearTimeout(keyUpTimeout);
+    keyUpTimeout = setTimeout(() => {
+      timers.update(dTimers => {
+        for(let i = 0, l = dTimers.length; i < l; i++){
+          if(dTimers[i].name === name) dTimers[i].length = parseInt(e.target.value)
+        }
+        return dTimers;
+      })
+    }, 1000 / 3);
+  }
+
+  const iconClicked = (e) => {
+    activeTimerName.set( name )
+    dispatch('selected', {name:name});
+  }
 
 </script>
 
 <div class="timeOption">
-  {#if active}
-    <div>🔴</div>
-  {:else}
-    <div>⚪</div>
-  {/if}
-  <input type="text" value={timeDisplay}/>
+  <div on:click={iconClicked}>
+    {#if active}
+      <div>🔴</div>
+    {:else}
+      <div>⚪</div>
+    {/if}  
+  </div>
+  <h3>{name}</h3>
+  <input value={thisTimerLengthFormatted} readonly=true />
+  <input type="text" on:keyup={thisTimerLengthChanged} value={thisTimerLength}/>
 </div>
 
 <style>

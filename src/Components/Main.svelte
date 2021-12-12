@@ -1,17 +1,78 @@
 
 <script>
   import TimeOption from './TimeOption.svelte'
-  import { timer, workTimerLength, shortBreakLength, longBreakLength } from './../Stores/Timer'
+  import { msToMinutesSeconds } from './../Classes/Util'
+  import { timers, activeTimerName, activeRunTime } from './../Stores/Timer'
 
-  $timer.initFromLocalStorage( window.localStorage );
+  let runningState = 0; // 0 stopped, 1 running, 2 paused
+  let remainingTimeFormatted = '00:00';
 
-  const timers = $timer.getTimers();
+  // ======================
 
-  //TODO how to read current time remaining? this isn't working?
-  let currentTimeRemaining;
-  timer.subscribe((updatedTimer)=>{
-    currentTimeRemaining = updatedTimer.getCurrentTimeRemaining()
+  const updateDisplayTime = (_timers, _activeRunTime) => {
+    _timers.some( t => {
+      if(t.name === $activeTimerName){
+        remainingTimeFormatted = msToMinutesSeconds(t.length - _activeRunTime);
+      }
+    })
+  }
+
+  // if a timer changes
+  timers.subscribe(dTimers => {
+    updateDisplayTime(dTimers, $activeRunTime);
   })
+
+  // if the run time changes
+  activeRunTime.subscribe( dActiveRunTime => {
+    updateDisplayTime($timers, dActiveRunTime);
+  })
+
+  // if the selected timer is set
+  activeTimerName.subscribe( dActiveTimerName => {
+    updateDisplayTime($timers, $activeRunTime);  
+  })
+
+  // set initial
+  updateDisplayTime($timers, $activeRunTime);
+
+  // handle the start / pause button
+  let buttonClicked = () => {
+    
+    switch (runningState) {
+      case 0:
+        startTimer()
+        break;
+      case 1:
+        pauseTimer()
+        break;
+      default:
+        break;
+    }
+
+  }
+
+  //TODO change state ids
+  // - suss out stopped / reset logic?
+
+  let timerIntervalId = false;
+  const startTimer = () => {
+    clearInterval(timerIntervalId);
+    timerIntervalId = setInterval(() => { activeRunTime.update(v => v += 1000) }, 1000);
+    runningState = 1;
+  }
+  const pauseTimer = () => {
+    clearInterval(timerIntervalId);
+    runningState = 0;
+  }
+  const stopTimer = () => {
+    clearInterval(timerIntervalId);
+    runningState = 2
+  }
+
+  // when a TimerOptions is selected as the new timer
+  const onSelected = (event) => {
+    activeTimerName.set( event.detail.name )
+  }
 
 </script>
 
@@ -23,23 +84,27 @@
 
   <div>
     <h2>
-      00:00
+      {remainingTimeFormatted}
     </h2>
   </div>
 
   <div>
-    <button on:click={$timer.start()}>Start</button>
+    <button on:click={buttonClicked}>
+      {#if runningState === 0 }
+      Start
+      {:else if runningState === 1 }
+      Pause
+      {/if}
+    </button>
   </div>
 
   <div class="timeOptions">
-    {#each timers as timerInfo}
-      <TimeOption active={$timer.getCurrentTimer().id === timerInfo.id} time={
-        $timer.getState() === 0
-          ? timerInfo.time
-          : currentTimeRemaining
-        } />
+    {#each $timers as thisTimer }
+    <TimeOption
+      on:selected={onSelected}
+      name={thisTimer.name}
+    />
     {/each}
-    
   </div>
 </div>
 
