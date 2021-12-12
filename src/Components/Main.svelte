@@ -1,15 +1,38 @@
 <script>
   import TimerSection from "./TimerSection.svelte";
-  import { msToMinutesSeconds } from "./../Classes/Util";
-  import { timers, activeTimerName, activeRunTime } from "./../Stores/Timer";
+  import { 
+    msToMinutesSeconds,
+    sendNotification
+  } from "../Classes/Util";
+  import { 
+    timers,
+    activeTimerName,
+    activeRunTime,
+    notificationPermission
+   } from "./../Stores/Timer";
 
   let runningState = 0; // 0 stopped, 1 running, 2 paused
   let remainingTimeFormatted = "00:00";
+  let timerIntervalId = false;
 
   // ===========================================================================
 
+  // get notification permission
+  if(Notification.permission === 'granted'){
+    console.log('Notification.permission', Notification.permission);
+    notificationPermission.set(Notification.permission)
+    sendNotification('TEST');
+    const audio = new Audio('/sound/bell-sound.mp3')
+    audio.play();
+  } else {
+    Notification.requestPermission().then(permission => {
+      console.log(`notification permission ${permission}`);
+      notificationPermission.set(permission)
+    })
+  }
+
   const updateDisplayTime = (_timers, _activeRunTime) => {
-    _timers.some((t) => {
+    _timers.some((t) => { 
       if (t.name === $activeTimerName) {
         remainingTimeFormatted = msToMinutesSeconds(t.length - _activeRunTime);
       }
@@ -36,19 +59,16 @@
 
   // handle the start / pause button
   let buttonClicked = () => {
-    switch (runningState) {
-      case 0:
-        startTimer();
-        break;
-      case 1:
-        pauseTimer();
-        break;
-      default:
-        break;
+    if(
+      runningState === 0 // stopped
+      || runningState === 2 // paused
+    ){
+      startTimer();
+    }else if( runningState === 1 ){ // running
+      pauseTimer();
     }
   };
 
-  let timerIntervalId = false;
   const startTimer = () => {
     clearInterval(timerIntervalId);
     timerIntervalId = setInterval(() => {
@@ -58,11 +78,13 @@
   };
   const pauseTimer = () => {
     clearInterval(timerIntervalId);
-    runningState = 0;
+    runningState = 2;
   };
   const stopTimer = () => {
-    clearInterval(timerIntervalId);
-    runningState = 2;
+    clearInterval(timerIntervalId)
+    runningState = 0 // set stopped
+    activeRunTime.set(0) // reset running time 
+    activeTimerName.set('focus') // reset back to default timer
   };
 
   // when a TimerOptions is selected as the new timer
@@ -72,6 +94,7 @@
 </script>
 
 <div>
+
   <div>
     <h1>🍅</h1>
   </div>
@@ -90,6 +113,7 @@
         Pause
       {/if}
     </button>
+    <button on:click={stopTimer}>Reset</button>
   </div>
 
   <div class="TimerSections">

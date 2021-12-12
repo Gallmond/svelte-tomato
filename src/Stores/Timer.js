@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 
 // ============= new here =============
+export const notificationPermission = writable(null);
 export const activeRunTime = writable(0);
 export const activeTimerName = writable("focus");
 export const timers = writable([
