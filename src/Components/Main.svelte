@@ -18,18 +18,7 @@
   // ===========================================================================
 
   // get notification permission
-  if(Notification.permission === 'granted'){
-    console.log('Notification.permission', Notification.permission);
-    notificationPermission.set(Notification.permission)
-    sendNotification('TEST');
-    const audio = new Audio('/sound/bell-sound.mp3')
-    audio.play();
-  } else {
-    Notification.requestPermission().then(permission => {
-      console.log(`notification permission ${permission}`);
-      notificationPermission.set(permission)
-    })
-  }
+  sendNotification('foobar', true)
 
   const updateDisplayTime = (_timers, _activeRunTime) => {
     _timers.some((t) => { 

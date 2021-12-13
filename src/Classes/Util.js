@@ -30,26 +30,24 @@ export const minutesToMs = (minutes) => {
   return minutes * 60 * 1000;
 }
 
-class AudioHandler{
-  constructor(){
-    this.audio = new Audio('/sound/bell-sound.mp3')
-  }
-  play(){
-    console.log('AudioHandler.play();')
-    this.audio.play();
-  }
-  pause(){
-    //TODO this is not stopping?
-    console.log('AudioHandler.pause();')
-    this.audio.pause();
-  }
+
+const getNotificationPermission = async () => {
+  if(Notification.permission === 'granted') return true;
+  const permission = await Notification.requestPermission();
+  return permission === 'granted'
 }
-const audioHandler = new AudioHandler();
-export const sendNotification = (text, ringBell = true) => {
-  let notification = new Notification(text);
-  ringBell && audioHandler.play()
-  notification.onclose = (e) => {
+
+export const sendNotification = async (text, notificationSounds = true) => {
+  
+  if(!await getNotificationPermission()) return;
+
+  const notification = new Notification(text);
+  if(notificationSounds){
+    notification._audio = new Audio('/sound/bell-sound.mp3');
+    notification._audio.play();
+  }
+  notification.onclick = (e) => {
+    notification._audio && notification._audio.pause();
     console.log('notification.onclose', e);
-    audioHandler.pause();
   }
 }
