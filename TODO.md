@@ -2,8 +2,8 @@
 - ? add reset
 - ? add stopped / running / paused state logic
 - ? mm:ss entry rather than milliseconds
-- alarm sound & alert
-- 'scroll' through timers (ie next / prev)
-  - incl auto
-- add skip
+- x alarm sound & alert on timeout
+- x automatically move to next timer on timeout
+- buttons to 'skip' to next one
+- implement loops of focus/short break before long break
 - add localhost storage / loading of settings

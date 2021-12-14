@@ -8,7 +8,7 @@
     timers,
     activeTimerName,
     activeRunTime,
-    notificationPermission
+    userSettings,
    } from "./../Stores/Timer";
 
   let runningState = 0; // 0 stopped, 1 running, 2 paused
@@ -18,12 +18,55 @@
   // ===========================================================================
 
   // get notification permission
-  sendNotification('foobar', true)
+  // sendNotification('foobar', true)
+
+  const getTimerByName = ( timerName ) => {
+    let found = false;
+    $timers.some( timer => {
+      found = timer.name === timerName
+        ? timer
+        : false;
+      return found;
+    }) 
+    return found;
+  }
+
+  /**
+   * 
+   * @param change name of timer, or -1 | +1
+   */
+  const timerChange = (change = null) => {
+    let names = [];
+    $timers.forEach(t => names.push(t.name) );
+    
+    if(typeof change === 'string' && names.includes( change )){
+      
+      console.log('change', change);
+      activeTimerName.set( change )
+
+    }else if(typeof change === 'number'){
+
+      let currentIndex = names.indexOf( $activeTimerName );
+      console.log('currentIndex', currentIndex);
+      var newIndex = currentIndex + change;
+      console.log('newIndex', newIndex);
+      // if less than 0, set to end of arr,
+      // otherwise modulo by len to wrap
+      newIndex = (newIndex < 0 ? names.length -1 : newIndex) % names.length;
+      console.log('newIndex (mod)', newIndex);
+      let newActiveTimerName = $timers[ newIndex ].name;
+      console.log('newActiveTimerName', newActiveTimerName);
+      activeTimerName.set( newActiveTimerName );
+
+    }
+
+  }
 
   const updateDisplayTime = (_timers, _activeRunTime) => {
     _timers.some((t) => { 
       if (t.name === $activeTimerName) {
-        remainingTimeFormatted = msToMinutesSeconds(t.length - _activeRunTime);
+        let remainingMilliseconds = Math.max(0, t.length - _activeRunTime)
+        remainingTimeFormatted = msToMinutesSeconds(remainingMilliseconds);
       }
     });
   };
@@ -62,6 +105,12 @@
     clearInterval(timerIntervalId);
     timerIntervalId = setInterval(() => {
       activeRunTime.update((v) => (v += 1000));
+      if(hasTimerExpired()){
+        let text = `Time for ${$activeTimerName} has ended.`
+        sendNotification(text, $userSettings.notificationSound)
+        $userSettings.pauseBetweenTimers && pauseTimer();
+        $userSettings.autoIncrementTimer && timerChange(+1);
+      }
     }, 1000);
     runningState = 1;
   };
@@ -75,6 +124,11 @@
     activeRunTime.set(0) // reset running time 
     activeTimerName.set('focus') // reset back to default timer
   };
+
+  // true if the active run time is longer than active timer's length
+  const hasTimerExpired = () => {
+    return $activeRunTime >= getTimerByName( $activeTimerName ).length
+  }
 
   // when a TimerOptions is selected as the new timer
   const onSelected = (event) => {

@@ -18,3 +18,15 @@ export const timers = writable([
     length: 1000 * 60 * 20,
   },
 ]);
+export const userSettings = writable({
+  // when a timer ends, scroll to the next one
+  autoIncrementTimer: true,
+  // if true, timer won't start automatically when the previous one ends.
+  pauseBetweenTimers: false,
+  // how many cycles of 'focus'-'rest' before 'break'
+  loopsBeforeLongBreak: 4,
+  // when a full cycle ('focus'-'rest')+'break' stop the timers.
+  endAfterFullCycle: false,
+  // notification popup has a sound
+  notificationSound: true,
+})
