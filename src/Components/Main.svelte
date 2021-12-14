@@ -31,6 +31,16 @@
     return found;
   }
 
+  // get the currently active timer
+  const getActiveTimer = () => {
+    for(let i = 0; i < $timers.length; i++){
+      if($timers[i].name === $activeTimerName){
+        return $timers[i];
+      }
+    }
+    return false;
+  }
+
   /**
    * 
    * @param change name of timer, or -1 | +1
@@ -41,27 +51,20 @@
     
     if(typeof change === 'string' && names.includes( change )){
       
-      console.log('change', change);
       activeTimerName.set( change )
 
     }else if(typeof change === 'number'){
 
       let currentIndex = names.indexOf( $activeTimerName );
-      console.log('currentIndex', currentIndex);
       var newIndex = currentIndex + change;
-      console.log('newIndex', newIndex);
-      // if less than 0, set to end of arr,
-      // otherwise modulo by len to wrap
       newIndex = (newIndex < 0 ? names.length -1 : newIndex) % names.length;
-      console.log('newIndex (mod)', newIndex);
-      let newActiveTimerName = $timers[ newIndex ].name;
-      console.log('newActiveTimerName', newActiveTimerName);
-      activeTimerName.set( newActiveTimerName );
+      activeTimerName.set( $timers[ newIndex ].name );
 
     }
 
   }
 
+  // update the display time
   const updateDisplayTime = (_timers, _activeRunTime) => {
     _timers.some((t) => { 
       if (t.name === $activeTimerName) {
@@ -90,7 +93,7 @@
   updateDisplayTime($timers, $activeRunTime);
 
   // handle the start / pause button
-  let buttonClicked = () => {
+  const buttonClicked = () => {
     if(
       runningState === 0 // stopped
       || runningState === 2 // paused
@@ -101,7 +104,11 @@
     }
   };
 
-  const startTimer = () => {
+  /**
+   * ==================== timer controls
+   */
+
+    const startTimer = () => {
     clearInterval(timerIntervalId);
     timerIntervalId = setInterval(() => {
       activeRunTime.update((v) => (v += 1000));
