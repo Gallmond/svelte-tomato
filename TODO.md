@@ -4,6 +4,6 @@
 - ? mm:ss entry rather than milliseconds
 - x alarm sound & alert on timeout
 - x automatically move to next timer on timeout
-- buttons to 'skip' to next one
+- x buttons to 'skip' to next one
 - implement loops of focus/short break before long break
 - add localhost storage / loading of settings

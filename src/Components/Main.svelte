@@ -1,74 +1,61 @@
 <script>
   import TimerSection from "./TimerSection.svelte";
-  import { 
-    msToMinutesSeconds,
-    sendNotification
-  } from "../Classes/Util";
-  import { 
+  import Button from "./Prefabs/Button.svelte";
+  import Settings from "./Settings.svelte";
+  import { msToMinutesSeconds, sendNotification } from "../Classes/Util";
+  import {
     timers,
     activeTimerName,
     activeRunTime,
     userSettings,
-   } from "./../Stores/Timer";
+  } from "./../Stores/Timer";
 
   let runningState = 0; // 0 stopped, 1 running, 2 paused
   let remainingTimeFormatted = "00:00";
   let timerIntervalId = false;
 
+  
+
   // ===========================================================================
 
-  // get notification permission
-  // sendNotification('foobar', true)
-
-  const getTimerByName = ( timerName ) => {
+  const getTimerByName = (timerName) => {
     let found = false;
-    $timers.some( timer => {
-      found = timer.name === timerName
-        ? timer
-        : false;
+    $timers.some((timer) => {
+      found = timer.name === timerName ? timer : false;
       return found;
-    }) 
+    });
     return found;
-  }
+  };
 
-  // get the currently active timer
-  const getActiveTimer = () => {
-    for(let i = 0; i < $timers.length; i++){
-      if($timers[i].name === $activeTimerName){
-        return $timers[i];
-      }
-    }
-    return false;
-  }
+  
 
-  /**
-   * 
-   * @param change name of timer, or -1 | +1
-   */
   const timerChange = (change = null) => {
+    // collect names
     let names = [];
-    $timers.forEach(t => names.push(t.name) );
-    
-    if(typeof change === 'string' && names.includes( change )){
-      
-      activeTimerName.set( change )
+    $timers.forEach((t) => names.push(t.name));
 
-    }else if(typeof change === 'number'){
+    let newTimerName = "";
 
-      let currentIndex = names.indexOf( $activeTimerName );
-      var newIndex = currentIndex + change;
-      newIndex = (newIndex < 0 ? names.length -1 : newIndex) % names.length;
-      activeTimerName.set( $timers[ newIndex ].name );
+    // if we're setting directly
+    if (typeof change === "string" && names.includes(change)) {
+      newTimerName = change;
 
+      // if we're incrementing
+    } else if (typeof change === "number") {
+      var newIndex = names.indexOf($activeTimerName) + change;
+      newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % names.length;
+      newTimerName = $timers[newIndex].name;
     }
 
-  }
+    activeRunTime.set(0);
+    activeTimerName.set(newTimerName);
+  };
 
   // update the display time
   const updateDisplayTime = (_timers, _activeRunTime) => {
-    _timers.some((t) => { 
+    _timers.some((t) => {
       if (t.name === $activeTimerName) {
-        let remainingMilliseconds = Math.max(0, t.length - _activeRunTime)
+        let remainingMilliseconds = Math.max(0, t.length - _activeRunTime);
         remainingTimeFormatted = msToMinutesSeconds(remainingMilliseconds);
       }
     });
@@ -94,12 +81,13 @@
 
   // handle the start / pause button
   const buttonClicked = () => {
-    if(
-      runningState === 0 // stopped
-      || runningState === 2 // paused
-    ){
+    if (
+      runningState === 0 || // stopped
+      runningState === 2 // paused
+    ) {
       startTimer();
-    }else if( runningState === 1 ){ // running
+    } else if (runningState === 1) {
+      // running
       pauseTimer();
     }
   };
@@ -108,13 +96,13 @@
    * ==================== timer controls
    */
 
-    const startTimer = () => {
+  const startTimer = () => {
     clearInterval(timerIntervalId);
     timerIntervalId = setInterval(() => {
       activeRunTime.update((v) => (v += 1000));
-      if(hasTimerExpired()){
-        let text = `Time for ${$activeTimerName} has ended.`
-        sendNotification(text, $userSettings.notificationSound)
+      if (hasTimerExpired()) {
+        let text = `Time for ${$activeTimerName} has ended.`;
+        sendNotification(text, $userSettings.notificationSound);
         $userSettings.pauseBetweenTimers && pauseTimer();
         $userSettings.autoIncrementTimer && timerChange(+1);
       }
@@ -126,54 +114,83 @@
     runningState = 2;
   };
   const stopTimer = () => {
-    clearInterval(timerIntervalId)
-    runningState = 0 // set stopped
-    activeRunTime.set(0) // reset running time 
-    activeTimerName.set('focus') // reset back to default timer
+    clearInterval(timerIntervalId);
+    runningState = 0; // set stopped
+    activeRunTime.set(0); // reset running time
+    activeTimerName.set("focus"); // reset back to default timer
   };
 
   // true if the active run time is longer than active timer's length
   const hasTimerExpired = () => {
-    return $activeRunTime >= getTimerByName( $activeTimerName ).length
-  }
+    return $activeRunTime >= getTimerByName($activeTimerName).length;
+  };
 
   // when a TimerOptions is selected as the new timer
   const onSelected = (event) => {
     activeTimerName.set(event.detail.name);
   };
+
+  const onSkip = () => {
+    // slipping should _always_ reset the active run time
+    activeRunTime.set(0);
+    // but it should optionally clear the running interval
+    if ($userSettings.pauseBetweenTimers) {
+      clearInterval(timerIntervalId);
+      runningState = 0; // set stopped
+    }
+    timerChange(+1);
+  };
+
+  $: rotation = `transform: rotate(${($activeRunTime / getTimerByName($activeTimerName).length) * 360}deg);`;
+
 </script>
 
-<div>
+<div class="outerWrapper">
+  <div class="innerWrapper">
+    <div>
+      <h1 style={rotation} class="icon">🍅</h1>
+    </div>
 
-  <div>
-    <h1>🍅</h1>
-  </div>
+    <div>
+      <h2>{remainingTimeFormatted}</h2>
+    </div>
 
-  <div>
-    <h2>
-      {remainingTimeFormatted}
-    </h2>
-  </div>
+    <div>
 
-  <div>
-    <button on:click={buttonClicked}>
-      {#if runningState === 0 || runningState === 2}
-        Start
-      {:else if runningState === 1}
-        Pause
-      {/if}
-    </button>
-    <button on:click={stopTimer}>Reset</button>
-  </div>
+      <Button onClick={buttonClicked}>
+        {#if runningState === 0 || runningState === 2}
+          Start
+        {:else if runningState === 1}
+          Pause
+        {/if}
+      </Button>
 
-  <div class="TimerSections">
-    {#each $timers as thisTimer}
-      <TimerSection on:selected={onSelected} name={thisTimer.name} />
-    {/each}
+      <Button onClick={stopTimer}>Reset</Button>
+    </div>
+
+    <Button onClick={onSkip}>Skip</Button>
+
+    <div class="TimerSections">
+      {#each $timers as thisTimer}
+        <TimerSection on:selected={onSelected} name={thisTimer.name} />
+      {/each}
+    </div>
+
+    <hr />
+
+    <Settings />
+
   </div>
 </div>
 
 <style>
+  .outerWrapper {
+    display: flex;
+    justify-content: center;
+  }
+  .innerWrapper {
+    widows: 80%;
+  }
   .TimerSections {
     margin-top: 20px;
     display: flex;

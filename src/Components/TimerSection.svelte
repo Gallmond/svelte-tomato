@@ -8,7 +8,7 @@
 
   let active;
   let thisTimerLength = 0;
-  let thisTimerLengthFormatted = "";
+  let thisTimerLengthFormatted;
 
   // ===========================================================================
 
@@ -22,7 +22,11 @@
     dTimers.some((dTimer) => {
       if (dTimer.name === name) {
         thisTimerLength = dTimer.length;
-        thisTimerLengthFormatted = msToMinutesSeconds(dTimer.length, true, false);
+        thisTimerLengthFormatted = msToMinutesSeconds(
+          dTimer.length,
+          true,
+          false
+        );
         return true;
       }
     });
@@ -54,16 +58,18 @@
 
 <div class="timeOption">
   <div on:click={iconClicked}>
-    {#if active}
-      <div>🔴</div>
-    {:else}
-      <div>⚪</div>
-    {/if}
+    <div>
+      {#if active}
+        🔴
+      {:else}
+        ⚪
+      {/if}
+    </div>
   </div>
 
   <h3>{name}</h3>
 
-  <input value={thisTimerLengthFormatted} readonly="true" />
+  <!-- <input value={thisTimerLengthFormatted} readonly="true" /> -->
 
   <label for="{name}-timerLengthInput">Timer length (minutes)</label>
   <input
@@ -72,7 +78,6 @@
     on:keyup={thisTimerLengthChanged}
     value={msToMinutesSeconds(thisTimerLength, true, false)}
   />
-
 </div>
 
 <style>
@@ -81,5 +86,7 @@
   }
   .timeOption > input {
     margin-top: 5px;
+    width:80%;
+    border-radius: 5px;
   }
 </style>
