@@ -1,6 +1,5 @@
 import { writable } from "svelte/store";
 
-export const notificationPermission = writable(null);
 export const activeRunTime = writable(0);
 export const loops = writable(0);
 export const activeTimerName = writable("focus");
@@ -26,5 +25,5 @@ export const userSettings = writable({
   // notification popup has a sound
   notificationSound: true,
   // focus-short break loops before long break
-  focusShortBreakLoops: 4,
+  focusRestLoops: 2,
 })

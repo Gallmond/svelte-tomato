@@ -17,6 +17,9 @@
 
   // ===========================================================================
 
+  // this should always be 1000. handy to shorten here for testing though
+  const SECOND_INTERVAL = 1000;
+
   const getTimerByName = (timerName) => {
     let found = false;
     $timers.some((timer) => {
@@ -25,8 +28,6 @@
     });
     return found;
   };
-
-  
 
   const timerChange = (change = null) => {
     // collect names
@@ -42,16 +43,16 @@
       // if we're incrementing
     } else if (typeof change === "number") {
 
-      if($loops > $userSettings.focusShortBreakLoops){
-        loops.set( $loops+1 );
-        var newIndex = names.indexOf($activeTimerName) + change;
-        newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % names.length;
-        newTimerName = $timers[newIndex].name;
-      }else{
-        var newIndex = names.indexOf($activeTimerName) + change;
-        newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % 2;
-        newTimerName = $timers[newIndex].name;
-      }
+      // if at or above focusRestLoops, allow move onto the next
+      let modulo = $loops >= $userSettings.focusRestLoops
+        ? names.length
+        : 2;
+
+      var newIndex = names.indexOf($activeTimerName) + change;
+      newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % modulo;
+      newTimerName = $timers[newIndex].name;
+
+      if(newIndex === 0) loops.set( $loops+1 );
       
     }
 
@@ -114,7 +115,7 @@
         $userSettings.pauseBetweenTimers && pauseTimer();
         $userSettings.autoIncrementTimer && timerChange(+1);
       }
-    }, 1000);
+    }, SECOND_INTERVAL);
     runningState = 1;
   };
   const pauseTimer = () => {
@@ -179,7 +180,7 @@
     <Button onClick={onSkip}>Skip</Button>
 
     <div class="LoopLine">
-      <p>Loops: {$loops}/{$userSettings.focusShortBreakLoops}</p>
+      <p>Loops: {$loops}/{$userSettings.focusRestLoops}</p>
       <hr>
     </div>
 

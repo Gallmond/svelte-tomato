@@ -23,7 +23,7 @@
 
     <dt>Focus-Short break loops before long break</dt>
     <!-- svelte-ignore missing-declaration -->
-    <dd><input type="number" bind:value={$userSettings.focusShortBreakLoops}></dd>
+    <dd><input type="number" bind:value={$userSettings.focusRestLoops}></dd>
   </dl>
 </div>
 
