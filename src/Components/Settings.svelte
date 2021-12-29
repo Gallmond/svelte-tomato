@@ -20,6 +20,10 @@
     <dt>Browser notification plays sound</dt>
     <!-- svelte-ignore missing-declaration -->
     <dd><Switch bind:checked={$userSettings.notificationSound} /></dd>
+
+    <dt>Focus-Short break loops before long break</dt>
+    <!-- svelte-ignore missing-declaration -->
+    <dd><input type="number" bind:value={$userSettings.focusShortBreakLoops}></dd>
   </dl>
 </div>
 

@@ -7,14 +7,13 @@
     timers,
     activeTimerName,
     activeRunTime,
+    loops,
     userSettings,
   } from "./../Stores/Timer";
 
   let runningState = 0; // 0 stopped, 1 running, 2 paused
   let remainingTimeFormatted = "00:00";
   let timerIntervalId = false;
-
-  
 
   // ===========================================================================
 
@@ -42,9 +41,18 @@
 
       // if we're incrementing
     } else if (typeof change === "number") {
-      var newIndex = names.indexOf($activeTimerName) + change;
-      newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % names.length;
-      newTimerName = $timers[newIndex].name;
+
+      if($loops > $userSettings.focusShortBreakLoops){
+        loops.set( $loops+1 );
+        var newIndex = names.indexOf($activeTimerName) + change;
+        newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % names.length;
+        newTimerName = $timers[newIndex].name;
+      }else{
+        var newIndex = names.indexOf($activeTimerName) + change;
+        newIndex = (newIndex < 0 ? names.length - 1 : newIndex) % 2;
+        newTimerName = $timers[newIndex].name;
+      }
+      
     }
 
     activeRunTime.set(0);
@@ -170,10 +178,15 @@
 
     <Button onClick={onSkip}>Skip</Button>
 
+    <div class="LoopLine">
+      <p>Loops: {$loops}/{$userSettings.focusShortBreakLoops}</p>
+      <hr>
+    </div>
+
     <div class="TimerSections">
-      {#each $timers as thisTimer}
-        <TimerSection on:selected={onSelected} name={thisTimer.name} />
-      {/each}
+      <TimerSection on:selected={onSelected} name={$timers[0].name} />
+      <TimerSection on:selected={onSelected} name={$timers[1].name} />
+      <TimerSection on:selected={onSelected} name={$timers[2].name} />
     </div>
 
     <hr />
@@ -195,5 +208,21 @@
     margin-top: 20px;
     display: flex;
     flex-direction: row;
+  }
+  .LoopLine{
+    flex-direction: column;
+    display: flex;
+    flex:1;
+    align-content: flex-start;
+  }
+  .LoopLine > hr{
+    width: 66.66%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .LoopLine > p{
+    width: 66.66%;
+    margin-left: 0;
+    margin-right: 0;
   }
 </style>
