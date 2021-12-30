@@ -1,6 +1,7 @@
 <script>
-  import TimerSection from "./TimerSection.svelte";
-  import Button from "./Prefabs/Button.svelte";
+  import LoopsSection from './Prefabs/LoopsSection.svelte';
+  import ControlsSection from "./Prefabs/ControlsSection.svelte";
+  import RotatingIcon from "./Prefabs/RotatingIcon.svelte";
   import Settings from "./Settings.svelte";
   import { msToMinutesSeconds, sendNotification } from "../Classes/Util";
   import {
@@ -18,7 +19,7 @@
   // ===========================================================================
 
   // this should always be 1000. handy to shorten here for testing though
-  const SECOND_INTERVAL = 1000;
+  const SECOND_INTERVAL = 10;
 
   const getTimerByName = (timerName) => {
     let found = false;
@@ -154,43 +155,25 @@
 
 </script>
 
+
+
 <div class="outerWrapper">
   <div class="innerWrapper">
-    <div>
-      <h1 style={rotation} class="icon">🍅</h1>
-    </div>
+
+    <RotatingIcon {rotation} />
 
     <div>
       <h2>{remainingTimeFormatted}</h2>
     </div>
 
-    <div>
+    <ControlsSection 
+      {runningState}
+      {buttonClicked}
+      {stopTimer}
+      {onSkip}
+    />
 
-      <Button onClick={buttonClicked}>
-        {#if runningState === 0 || runningState === 2}
-          Start
-        {:else if runningState === 1}
-          Pause
-        {/if}
-      </Button>
-
-      <Button onClick={stopTimer}>Reset</Button>
-    </div>
-
-    <Button onClick={onSkip}>Skip</Button>
-
-    <div class="LoopLine">
-      <p>Loops: {$loops}/{$userSettings.focusRestLoops}</p>
-      <hr>
-    </div>
-
-    <div class="TimerSections">
-      <TimerSection on:selected={onSelected} name={$timers[0].name} />
-      <TimerSection on:selected={onSelected} name={$timers[1].name} />
-      <TimerSection on:selected={onSelected} name={$timers[2].name} />
-    </div>
-
-    <hr />
+    <LoopsSection {onSelected} />
 
     <Settings />
 
@@ -204,26 +187,5 @@
   }
   .innerWrapper {
     widows: 80%;
-  }
-  .TimerSections {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: row;
-  }
-  .LoopLine{
-    flex-direction: column;
-    display: flex;
-    flex:1;
-    align-content: flex-start;
-  }
-  .LoopLine > hr{
-    width: 66.66%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-  .LoopLine > p{
-    width: 66.66%;
-    margin-left: 0;
-    margin-right: 0;
   }
 </style>
