@@ -3,10 +3,10 @@
 
 </script>
 
-<button class="button" on:click={onClick}><slot>Button text</slot></button>
+<button class="user-control" on:click={onClick}><slot>Button text</slot></button>
 
 <style>
-  .button{
+  .user-control{
     font-weight: bold;
     border-radius: 5px;
     padding: 5px 20px;

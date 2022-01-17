@@ -19,7 +19,7 @@
   // ===========================================================================
 
   // this should always be 1000. handy to shorten here for testing though
-  const SECOND_INTERVAL = 1000;
+  const SECOND_INTERVAL = 10;
 
   const getTimerByName = (timerName) => {
     let found = false;

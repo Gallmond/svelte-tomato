@@ -31,7 +31,7 @@ export const minutesToMs = (minutes) => {
 }
 
 
-const getNotificationPermission = async () => {
+export const getNotificationPermission = async () => {
   if(Notification.permission === 'granted') return true;
   const permission = await Notification.requestPermission();
   return permission === 'granted'
